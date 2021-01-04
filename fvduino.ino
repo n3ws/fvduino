@@ -1,4 +1,24 @@
 
+/*  Copyright 2020 Perttu Haimi
+  
+    This file is part of FVduino.
+
+    FVduino is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    FVduino is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with FVduino.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ * 
+ */
+ 
 #include <Arduino.h>
 #include <Bounce2.h>
 #include <EEPROM.h>
@@ -60,15 +80,7 @@ const uint8_t DS1881_read_address = (DS1881_BASE_I2C_ADDR << 1) | _BV(0);
 // They are compressed by LZ algorithm (compress.py) to approx.
 // half the size. Include the algorithm data blocks here.
 
-#include "spatialist.h"
-#include "reverbalizer.h"
-#include "custom.h"
-#include "module8.h"
-#include "octagon.h"
-#include "misc.h"
-#include "various.h"
 #include "spinsemi.h"
-#include "holy_city_2.h"
 
 // Strings for describing the algorithm and parameters
 typedef struct {
@@ -96,187 +108,47 @@ typedef struct {
 
 const AlgoDatum algodata [] PROGMEM = {
 
-  // Reverbs 29
+  // Reverbs
 
-  {{"BlackfaceRev",  "Dwell", "Speed", "Inten"}, {17,  7, 128, 128, 128}, (uint8_t *)custom_01},
-  {{"BrownfaceRev",  "Dwell", "Speed", "Inten"}, {17,  7, 128, 128, 128}, (uint8_t *)custom_02},
-
-  {{"Plate Rev VT",  "Time",  "LFilt", "Hfilt"}, {17,  8, 128, 128, 128}, (uint8_t *)rev_pl_3},
-  {{"Plate Rev T",   "Time",  "LFilt", "HFilt"}, {17,  8, 128, 128, 128}, (uint8_t *)rev_pl_2},
-  {{"Plate Rev N",   "Time",  "LFilt", "HFilt"}, {17,  8, 128, 128, 128}, (uint8_t *)rev_pl_1},
-
-  {{"Spring Rev",    "Revrb", "Rate",  "Depth"}, {17,  8, 128, 128, 128}, (uint8_t *)spring_verb_derv},
-  {{"SprgRev+Trem",  "Revrb", "Rate",  "Depth"}, {17,  8, 128, 128, 128}, (uint8_t *)spring_verb},
-  {{"Tremolo + Rev", "Revrb", "Rate",  "Level"}, {17,  8, 128, 128, 128}, (uint8_t *)GA_DEMO_TREM},
-
-  {{"PercAmbience",  "Level", "Tune",  "Feed" }, {17,  5, 128, 128, 128}, (uint8_t *)percussion_ambience}, 
+  {{"SprgRev+Trem",  "Revrb", "Rate", "Depth"}, {17,  8, 128, 128, 128}, (uint8_t *)spring_verb},
+  {{"Tremolo +Rev", "Revrb", "Rate",  "Level"}, {17,  8, 128, 128, 128}, (uint8_t *)GA_DEMO_TREM},
  
   {{"Room",          "Pre",   "Time",  "Damp" }, {17,  8, 128, 128, 128}, (uint8_t *)K3_V1_1_Room},
   {{"Hall",          "Pre",   "Time",  "Damp" }, {17,  8, 128, 128, 128}, (uint8_t *)K3_V1_0_Hall},
-  {{"Chamber",       "Dwell", "Low",   "High" }, {17,  8, 128, 128, 128}, (uint8_t *)spatialist_02},
-  {{"Cavern",        "Dwell", "Low",   "High" }, {17,  8, 128, 128, 128}, (uint8_t *)spatialist_03},
-  {{"Mountains",     "Damp",  "Time",  "Pitch"}, {17,  8, 128, 128, 128}, (uint8_t *)reverbalizer_06},
-
-  {{"Shimmer",       "Shimr", "Revrb", "Time" }, {17, 10, 128, 128, 128}, (uint8_t *)shimmer_2},
-  {{"Shimmer Oct",   "Shimr", "Time",  "Damp" }, {17,  8, 128, 128, 128}, (uint8_t *)dattorro_shimmer_oct_var_lvl},
-  {{"ShimmerDrAlx",  "Time",  "Trebl", "Shimr"}, {17,  5, 128, 128, 128}, (uint8_t *)shimmer_drAlx},
-
-  {{"Pitch Rev 1",   "Shift", "Time",  "Damp" }, {17,  8, 128, 128, 128}, (uint8_t *)dattorro_shimmer_val_pitch},
-  {{"Pitch Rev 2",   "Dwell", "Down",  "Up"   }, {17,  8, 128, 128, 128}, (uint8_t *)spatialist_06},
-  {{"Pitch Rev 3",   "Shift", "Time",  "Damp" }, {17,  8, 128, 128, 128}, (uint8_t *)dattorro_1oct_pitch_ip_fb_2k},
-
-  {{"Predelay Rev",  "Pre",   "Time",  "Filt" }, {17,  3, 128, 128, 128}, (uint8_t *)dattorro_var_filter_var_predelay},
   {{"Gated Reverb",  "Pre",   "GateT", "Damp" }, {17,  8, 128, 128, 128}, (uint8_t *)K3_V1_3_GATED},
 
-  {{"Mod. Reverb",   "Dwell", "Depth", "Rate" }, {17, 10, 128, 128, 128}, (uint8_t *)spatialist_05},
-  {{"Touch Reverb",  "Dwell", "Duck",  "Sens" }, {17, 10, 128, 128, 128}, (uint8_t *)spatialist_07},
-  {{"Damped Revrb",  "Pre",   "Time",  "Damp" }, {17, 10, 128, 128, 128}, (uint8_t *)dattorro_var_predelay_var_damping_2k},
-
-  {{"Filter Reverb", "Filt",  "Time",  "Damp" }, {17, 10, 128, 128, 128}, (uint8_t *)dattorro_var_filter_var_damping},
   {{"Reverb+HP+LP",  "Revrb", "HP",    "LP"   }, {17, 10, 128, 128, 128}, (uint8_t *)dance_ir_h_l},
   {{"Rev+Pitch+LP",  "Revrb", "Pitch", "LP"   }, {17, 10, 128, 128, 128}, (uint8_t *)dance_ir_ptz_l},
   {{"Rev+Flang+LP",  "Revrb", "Flang", "LP"   }, {17, 10, 128, 128, 128}, (uint8_t *)dance_ir_fla_l},
-  
-  // Delays 21
+
+  {{"ROM Reverb 2",  "Par 1", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)rom_rev2},
+  {{"Plate Reverb",  "PreD",  "Time",  "Damp" }, {17, 10, 128, 128, 128}, (uint8_t *)K3_V1_2_PLATE},
+  {{"St EchoRevrb",  "Delay", "Rep",   "Revrb"}, {17, 10, 128, 128, 128}, (uint8_t *)K3_V1_5_STECHO_REV},
+
+  // Delays
   
   {{"Echo/Reverb",   "Revrb", "Time",  "Level"}, {17, 10, 128, 128, 128}, (uint8_t *)GA_DEMO_ECHO_RPT},
   {{"Pitch Echo",    "Pitch", "Time",  "Mix"  }, {17, 10, 128, 128, 128}, (uint8_t *)rom_pt_echo},
   {{"Rep Echo/Rev",  "Delay", "Rep",   "Revrb"}, {17, 10, 128, 128, 128}, (uint8_t *)K3_V1_4_ECHO_REV},
+  {{"Echo/Revrb2",   "Revrb", "Time",  "Level"}, {17, 10, 128, 128, 128}, (uint8_t *)GA_DEMO_ECHO},
 
-  {{"Mod. Delay 1",  "Mod",   "Time",  "Feed" }, {17, 10, 128, 128, 128}, (uint8_t *)reverbalizer_03},
-  {{"Mod. Delay 2",  "Time",  "Feed",  "Mod"  }, {17, 10, 128, 128, 128}, (uint8_t *)octagon_02},
-  {{"Tape Delay",    "Time",  "Feed",  "Degr" }, {17, 10, 128, 128, 128}, (uint8_t *)custom_03},
-  {{"Digi Delay 1",  "Time",  "Mix",   "Feed" }, {17, 10, 128, 128, 128}, (uint8_t *)demo_delays_2},
-  {{"Digi Delay 2",  "Time",  "Mix",   "Feed" }, {17, 10, 128, 128, 128}, (uint8_t *)demo_delays_3},
 
-  {{"Multi Del 1",   "Time",  "Feed",  "Mod"  }, {17, 10, 128, 128, 128}, (uint8_t *)multi_tap_delays_4},
-  {{"Multi Del 2",   "Time",  "Feed",  "Mod"  }, {17, 10, 128, 128, 128}, (uint8_t *)multi_tap_delays_5},
-
-  {{"Ping Pong",     "Time",  "Feed",  "Damp" }, {17, 10, 128, 128, 128}, (uint8_t *)pp_dubble},
-  {{"Triple Delay",  "Time1", "T 2+3", "Feed" }, {17, 10, 128, 128, 128}, (uint8_t *)triple_delay_feedback},
-  {{"Triple Delay2", "Time1", "Time2", "Time3"}, {17, 10, 128, 128, 128}, (uint8_t *)tripple_echo_cascaded},
-
-  {{"1Head Tape",     "Time",  "Feed",  "Damp"}, {17, 10, 128, 128, 128}, (uint8_t *)dv103_1head},  
-//  {{"1Head TapeRev",  "Time",  "Feed",  "Damp"}, {17, 10, 128, 128, 128}, (uint8_t *)dv103_1head_4xreverb}, TODO Choose later which to remove
-  {{"2Head Tape",     "Time",  "Feed",  "Damp"}, {17, 10, 128, 128, 128}, (uint8_t *)dv103_2head_2_1_reverb},
-
-  {{"Space Delay",   "Time",  "Feed",  "Filt" }, {17, 10, 128, 128, 128}, (uint8_t *)custom_04},
-  {{"Pitch Delay",   "Time",  "Feed",  "Pitch"}, {17, 10, 128, 128, 128}, (uint8_t *)octagon_03},
-  {{"OilCan Delay",  "Time",  "Width", "Feed" }, {17, 10, 128, 128, 128}, (uint8_t *)oil_can_delay}, 
-  {{"Kaleidoscope",  "Time",  "Pitch", "Feed" }, {17, 10, 128, 128, 128}, (uint8_t *)bf_geoffrey},
-  {{"Choir Saw",     "Time",  "Feed",  "Speed"}, {17, 10, 128, 128, 128}, (uint8_t *)choir_saw}, 
-  {{"Faux Phaser",   "Speed", "Time",  "Feed" }, {17, 10, 128, 128, 128}, (uint8_t *)faux_phaser_2},
-
-  // Modulation 30
+  // Modulation
   
-  {{"Chorus 1",      "Rate",  "Range", ""     }, {17, 10, 128, 128,   0}, (uint8_t *)chorus_demo_bank_2018_0},
-  {{"Chorus 2",      "Rate",  "Depth", "Voice"}, {17,  6, 100, 128, 160}, (uint8_t *)module8_02},
-  {{"Chorus+Reverb", "Width", "Sweep", "Revrb"}, {17, 10, 128, 128, 128}, (uint8_t *)K3_V1_6_CHOR_REV},
-  {{"Dual Chorus",   "Rate1", "Rate2", "Depth"}, {17, 10, 128, 128, 128}, (uint8_t *)chorus_dual_rate},
+  {{"Chorus+Revrb", "Width", "Sweep", "Revrb"}, {17, 10, 128, 128, 128}, (uint8_t *)K3_V1_6_CHOR_REV},
+  {{"Flanger+Rev",  "Revrb", "Rate",  "Feed" }, {17, 10, 128, 128, 128}, (uint8_t *)GA_DEMO_FLANGE},
 
-  {{"Flanger 1",     "Rate",  "Width", "Reso" }, {17, 10, 128, 128, 128}, (uint8_t *)flangers_7},
-  {{"Flanger 2",     "Rate",  "Depth", "Regen"}, {17, 10, 128, 128, 128}, (uint8_t *)module8_01},
-  {{"TZ Flanger",    "Rate",  "Feed",  ""     }, {17,  7, 128, 128,   0}, (uint8_t *)through_zero_flangers_2},
+  {{"Phaser+Rev",   "Revrb", "Rate",  "Width"}, {17, 10, 128, 128, 128}, (uint8_t *)GA_DEMO_PHASE},
 
-  {{"Flanger/Trem",  "Rate",  "Reso",  "Offst"}, {17, 10, 128, 128, 128}, (uint8_t *)new_flanger}, 
-  {{"Flanger+Rev",   "Revrb", "Rate",  "Feed" }, {17, 10, 128, 128, 128}, (uint8_t *)GA_DEMO_FLANGE},
+  {{"Tremolo+Rev",  "Revrb", "Rate",  "Trem" }, {17,  7, 128, 128, 128}, (uint8_t *)rom_trem_rev},
 
-  {{"Phaser",        "Rate",  "Depth", "Regen"}, {17, 10, 128, 128, 128}, (uint8_t *)module8_00},
-  {{"Slocum Phaser", "Rate",  "Width", "Stage"}, {17,  8, 100, 175, 220}, (uint8_t *)slocum_phaser},
-  {{"Env Phaser",    "Rate",  "Depth", "Regen"}, {17, 10, 128, 128, 128}, (uint8_t *)envelope_phaser}, 
-  {{"Phaser/Flang",  "Feed",  "Range", "Speed"}, {17, 10, 128, 128, 128}, (uint8_t *)bf_phaser},
-  {{"Phaser+Rev",    "Revrb", "Rate",  "Width"}, {17, 10, 128, 128, 128}, (uint8_t *)GA_DEMO_PHASE},
+  {{"Vibrato+Rev",  "Revrb", "Rate",  "Width"}, {17, 10, 128, 128, 128}, (uint8_t *)GA_DEMO_VIBRATO},
 
-  {{"Harmon. Trem",  "Rate",  "Depth", "Spect"}, {17, 10, 128, 160, 128}, (uint8_t *)module8_03},
-  {{"Shape Tremol",  "Shape", "Depth", "Speed"}, {17, 10, 128, 128, 128}, (uint8_t *)tremolo_shapes_reduced},
-  {{"Tremolo+Rev",   "Revrb", "Rate",  "Trem" }, {17,  7, 128, 128, 128}, (uint8_t *)rom_trem_rev},
+  {{"Env Filt+Rev", "Revrb", "Sens",  "FiltQ"}, {17, 10, 128, 128, 128}, (uint8_t *)GA_DEMO_WAH},
 
-  {{"Vibrato+Rev",   "Revrb", "Rate",  "Width"}, {17, 10, 128, 128, 128}, (uint8_t *)GA_DEMO_VIBRATO},
-
-  {{"Ring Mod",      "Carr1", "Mix",   "Carr2"}, {17, 10, 128, 128, 128}, (uint8_t *)module8_05},
-
-  {{"LFO Filter",    "Rate",  "Depth", "Lo/Hi"}, {17, 10, 128, 128, 128}, (uint8_t *)module8_07},
-  {{"Auto Filter",   "Sens",  "Pitch", "Voice"}, {17, 10, 128, 128, 128}, (uint8_t *)reverbalizer_01},
-  {{"Auto Wah",      "Sens",  "Type",  "Level"}, {17, 10, 128, 128, 128}, (uint8_t *)filter_env_LP_HP_up}, 
-  {{"Env Filt+Rev",  "Revrb", "Sens",  "FiltQ"}, {17, 10, 128, 128, 128}, (uint8_t *)GA_DEMO_WAH},
-
-  {{"Bit Crusher",   "Crush", "Filt",  "Detun"}, {17, 10, 128, 128, 128}, (uint8_t *)octagon_04},
-
-  {{"Dual Octaver",  "Dry",   "Up",    "Down" }, {17, 10,   0, 128, 128}, (uint8_t *)bf_newoctaver},
-  {{"Dual Shift",    "Pitc1", "Mix",   "Pitc2"}, {17, 10, 128, 128, 128}, (uint8_t *)octagon_05}, // TODO set mix to 0?
-  
-  {{"Dual Detune",   "Det 1", "Det 2", "Time" }, {17, 10, 128, 128, 128}, (uint8_t *)custom_05},
-  {{"Mod. Unison",   "Rate",  "Depth", "Time" }, {17, 10, 128, 128, 128}, (uint8_t *)custom_06},
-  {{"Pitch Mod",     "Rate",  "Depth", ""     }, {17, 10, 128, 128,   0}, (uint8_t *)module8_06},  
-  {{"Parallax",      "Feed",  "Mix",   "Phasr"}, {17, 10, 128, 128, 128}, (uint8_t *)parallax},
-
-//  {{"TZ Flanger 1",  "Rate",  "Feed",  ""     }, {17, 10, 128, 128,   0}, (uint8_t *)through_zero_flangers_1},
-//  {{"Ping Pong Tr",  "Time",  "Feed",  "Damp" }, {17, 10, 128, 128, 128}, (uint8_t *)pp_tripple},
-//  {{"Daydream",      "Time",  "Feed",  "Width"}, {17, 10, 128, 128, 128}, (uint8_t *)octagon_07},
-//  {{"Pulse Trem",    "Rate",  "Depth", ""     }, {17, 10, 128, 128, 128}, (uint8_t *)module8_04},
-//  {{"HC TZflang 0",  "Rate",  "Feed",  ""     }, {17, 10, 128, 128, 128}, (uint8_t *)through_zero_flangers_0}, // TEST
-//  {{"Flanger+Rev2",  "Rate",  "Width", "Reso" }, {17, 10, 128, 128, 128}, (uint8_t *)flangers_4},
-//  {{"Flanger 2",     "Delay", "Rate",  "Width"}, {17, 10, 128, 128, 128}, (uint8_t *)K3_V1_7_FLANGE},
-//  {{"HC flanger 0",  "Rate", "Width", "Reso"}, {17, 10, 128, 128, 128}, (uint8_t *)flangers_0}, // TEST
-//  {{"HC flanger 1",  "Rate", "Width", "Reso"}, {17, 10, 128, 128, 128}, (uint8_t *)flangers_1}, // TEST
-//  {{"HC flanger 2",  "Rate", "Width", "Reso"}, {17, 10, 128, 128, 128}, (uint8_t *)flangers_2}, // TEST
-//  {{"HC flanger 3",  "Rate", "Width", "Reso"}, {17, 10, 128, 128, 128}, (uint8_t *)flangers_3}, // TEST
-//  {{"Servo Flanger", "Speed", "Width", "Reso"}, {17, 10, 128, 128, 128}, (uint8_t *)flangers_5_mod}, // TEST
-//  {{"HC flanger 6",  "Rate", "Width", "Reso"}, {17, 10, 128, 128, 128}, (uint8_t *)flangers_6}, // TEST
-//  {{"Flanger+Rev",    "Revrb", "Rate",  "Flang"}, {17, 10, 128, 128, 128}, (uint8_t *)rom_fla_rev},
-//  {{"HC chorus 1",  "Rate", "Range", ""}, {17, 10, 128, 128, 128}, (uint8_t *)chorus_demo_bank_2018_1}, // TEST
-//  {{"HC chorus 2",  "Rate", "Range", ""}, {17, 10, 128, 128, 128}, (uint8_t *)chorus_demo_bank_2018_2}, // TEST
-//  {{"1Head Tape PP",  "Time",  "Feed",  "Damp"}, {17, 10, 128, 128, 128}, (uint8_t *)dv103_1head_pp},
-//  {{"1Head TapePP2",  "Time",  "Feed",  "Damp"}, {17, 10, 128, 128, 128}, (uint8_t *)dv103_1head_pp_2_1},
-//  {{"1Head TapeRPP",  "Time",  "Feed",  "Damp"}, {17, 10, 128, 128, 128}, (uint8_t *)dv103_1head_pp_2_1_4xreverb},
-//  {{"HC delay 0",  "Time", "Mix", "Feed"}, {17, 10, 128, 128, 128}, (uint8_t *)demo_delays_0}, // TEST
-//  {{"HC delay 1",  "Time", "Mix", "Feed"}, {17, 10, 128, 128, 128}, (uint8_t *)demo_delays_1}, // TEST
-//  {{"HC multiDel 0",  "Time", "Feed", "Mod"}, {17, 10, 128, 128, 128}, (uint8_t *)multi_tap_delays_0},
-//  {{"HC multiDel 1",  "Time", "Feed", "Mod"}, {17, 10, 128, 128, 128}, (uint8_t *)multi_tap_delays_1},
-//  {{"HC multiDel 2",  "Time", "Feed", "Mod"}, {17, 10, 128, 128, 128}, (uint8_t *)multi_tap_delays_2},
-//  {{"HC multiDel 3",  "Time", "Feed", "Mod"}, {17, 10, 128, 128, 128}, (uint8_t *)multi_tap_delays_3},
-//  {{"HC multiDel 6",  "Time", "Feed", "Mod"}, {17, 10, 128, 128, 128}, (uint8_t *)multi_tap_delays_6},
-//  {{"HC multiDel 7",  "Time", "Feed", "Mod"}, {17, 10, 128, 128, 128}, (uint8_t *)multi_tap_delays_7},
-//  {{"Tripl Delay 2",   "Time1", "Time2", "Time3"}, {17, 10, 128, 128, 128}, (uint8_t *)tripple_echo_var_fb},
-//  {{"Tripl Delay 3",   "Time1", "Time2", "Time3"}, {17, 10, 128, 128, 128}, (uint8_t *)tripple_echo_parallel},
-//  {{"Tripl Delay+Cho", "Time1", "Time2", "Time3"}, {17, 10, 128, 128, 128}, (uint8_t *)tripple_echo_var_fb_chorus},
-//  {{"Ping Pong 0",     "Time",  "Feed",  "Damp" }, {17, 10, 128, 128, 128}, (uint8_t *)pp_simple},
-//  {{"Ping Pong 1",     "Time",  "Feed",  "Damp" }, {17, 10, 128, 128, 128}, (uint8_t *)pp_basic},
-//  {{"Starfield",       "Time",  "Feed",  "Sweep"}, {17, 10, 128, 128, 128}, (uint8_t *)starfield}, 
-//  {{"Flanger",         "Rate",  "Feed",  "Range"}, {17, 10, 128, 128, 128}, (uint8_t *)flanger},
-//  {{"Dual LFO Chorus", "Rate1", "Rate2", "Depth"}, {17, 10, 128, 128, 128}, (uint8_t *)dual_lfo_chorus},
-//  {{"ROM Rev+Chorus",  "Revrb", "Rate",  "Mix/W"}, {17, 10, 128, 128, 128}, (uint8_t *)rom_chor_rev},
-//  {{"Echo/Reverb",     "Revrb", "Time",  "Level"}, {17, 10, 128, 128, 128}, (uint8_t *)GA_DEMO_ECHO},
-//  {{"Reverb",          "Par 1", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)rom_rev1},
-//  {{"Room Reverb S",   "Dwell", "Pre",   "Damp" }, {17, 10, 128, 128, 128}, (uint8_t *)spatialist_00},
-//  {{"Hall Reverb S",   "Dwell", "Pre",   "Damp" }, {17, 10, 128, 128, 128}, (uint8_t *)spatialist_01},
-//  {{"ROM Reverb 2",    "Par 1", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)rom_rev2},
-//  {{"Spring Reverb",   "Dwell", "Bass",  "Trebl"}, {17, 10, 128, 128, 128}, (uint8_t *)custom_00},
-//  {{"Plate Reverb",    "PreD",  "Time",  "Damp" }, {17, 10, 128, 128, 128}, (uint8_t *)K3_V1_2_PLATE},
-//  {{"Spacedash",       "Inten", "Rate",  "Mix"  }, {17, 10, 128, 128, 128}, (uint8_t *)spacedash},
-//  {{"Shimmer Reverb",  "Dwell", "Pitch", "Level"}, {17, 10, 128, 128, 128}, (uint8_t *)spatialist_04},
-//  {{"Shimmer Hall",    "Damp",  "Feed",  "Decay"}, {17, 10, 128, 128, 128}, (uint8_t *)shimmer_1},
-//  {{"Shimmer Reverb",  "Shimr", "Time",  "Damp" }, {17, 10, 128, 128, 128}, (uint8_t *)dattorro_shimmer_val_lvl},
-//  {{"Unknown 1",       "Par1 ", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)reverbalizer_00},
-//  {{"Unknown 5",       "Par1 ", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)reverbalizer_04},
-//  {{"Unknown 6",       "Par1 ", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)reverbalizer_05},
-//  {{"Unknown 8",       "Par1 ", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)reverbalizer_07},
-//  {{"Double Take",     "Det 1", "Det 2", "Time" }, {17, 10, 128, 128, 128}, (uint8_t *)custom_07},
-//  {{"Shimmer Reverb",  "Dwell", "Pitch", "Level"}, {17, 10, 128, 128, 128}, (uint8_t *)octagon_00},
-//  {{"Mod. Reverb",     "Dwell", "Depth", "Rate" }, {17, 10, 128, 128, 128}, (uint8_t *)octagon_01},
-//  {{"Harmon. Tremolo", "Rate",  "Depth", "Spect"}, {17, 10, 128, 128, 128}, (uint8_t *)octagon_06},
-//  {{"Pitch-step-glid", "Par1 ", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)pitch_step_glider},
-//  {{"Random-loop-del", "Par1 ", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)random_loop_delay},
-//  {{"Reverb",          "Par1 ", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)reverb}, 
-//  {{"Ring-pitch",      "Par1 ", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)ring_pitchulator}, 
-//  {{"Filter-tremolo",  "Par1 ", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)filter_tremolo_example},
-//  {{"Room-3-4-5",      "Par1 ", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)room_reverb_3_4_5},
-//  {{"Shimmer",         "Par1 ", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)shimmer},
-//  {{"Greenwood Delay", "Speed", "Time",  "Rand" }, {17, 10, 128, 128, 128}, (uint8_t *)greenwood_delay},
-//  {{"Up Down Octaver", "Mix",   "Up",    "Down" }, {17, 10, 128, 128, 128}, (uint8_t *)up_down_octaver},
-//  {{"Digifuzzer",      "Sampl", "BitDe", "Vol"  }, {17, 10, 128, 128, 128}, (uint8_t *)bf_digifuzzer},
-//  {{"St Echo Reverb",  "Delay", "Rep",   "Revrb"}, {17, 10, 128, 128, 128}, (uint8_t *)K3_V1_5_STECHO_REV},
-//  {{"ROM Pitch Shift", "Par 1", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)rom_pitch},
+  {{"Flanger 2",    "Delay", "Rate",  "Width"}, {17, 10, 128, 128, 128}, (uint8_t *)K3_V1_7_FLANGE},
+  {{"Flanger+Rev",  "Revrb", "Rate",  "Flang"}, {17, 10, 128, 128, 128}, (uint8_t *)rom_fla_rev},
+  {{"Pitch Shift",  "Par 1", "Par 2", "Par 3"}, {17, 10, 128, 128, 128}, (uint8_t *)rom_pitch},
 
 };
 
@@ -808,27 +680,6 @@ void decompress(uint8_t *dst, prog_uchar *src)
     }
   }
 }
-
-/*  Copyright 2020 Perttu Haimi
-  
-    This file is part of FVduino.
-
-    FVduino is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    FVduino is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with FVduino.  If not, see <https://www.gnu.org/licenses/>.
- * 
- * 
- */
-
 
 void send_algo()
 {
