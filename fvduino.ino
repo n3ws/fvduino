@@ -23,10 +23,6 @@
 #include <Bounce2.h>
 #include <EEPROM.h>
 
-//#include <avr/io.h>
-//#include <avr/interrupt.h>
-//#include <avr/pgmspace.h>
-
 #include  <avr/power.h>
 
 typedef unsigned char PROGMEM prog_uchar;
@@ -81,6 +77,8 @@ const uint8_t DS1881_read_address = (DS1881_BASE_I2C_ADDR << 1) | _BV(0);
 // half the size. Include the algorithm data blocks here.
 
 #include "spinsemi.h"
+
+
 
 // Strings for describing the algorithm and parameters
 typedef struct {
@@ -193,27 +191,31 @@ const uint16_t P_IN_USE_EE_ADDR = 0;
 const uint16_t PATCH_EE_ADDR = 1;
 const uint16_t ALGO_EE_ADDR = 512;
 
-uint8_t changed[NPATCH]; // to track what was changed
+uint8_t changed[NPATCH];        // to keep track of patch edit
 
 // State machine for user interface
 enum EditState {None, Select, Change};
 
 EditState es = None;
-uint8_t selection = 5;                  // default start from line 5
+uint8_t selection = 5;            // default start from line 5
 uint8_t patches_in_use = 2;
 uint8_t current_patch = 0;
-uint16_t bg_col = BLACK;                // gb_col will be light green if patch is edited but not saved
+uint16_t bg_col = BLACK;          // bg_col will be different if patch is edited but not saved
 
 
 /************** Digipot code ****************/
 
-// vol goes from 0 to 20
-// 17 is unity gain (corresponding to pot volume 60)
 
-// mix goes from 0 to 20
-// 10 is 1:1 mix max wet - max dry 
-// below 10 is less wet - max dry
-// above 10 is max wet  - less dry
+/* Calculate actual pot positions from vol and mix values
+
+   vol goes from 0 to 20
+   17 is unity gain (corresponding to pot volume 60)
+
+   mix goes from 0 to 20
+   10 is 1:1 mix max wet - max dry 
+   below 10 is less wet - max dry
+   above 10 is max wet  - less dry
+*/
 uint8_t dry_from(uint8_t vol, uint8_t mix)
 {  
   if(mix > 20)
@@ -423,7 +425,7 @@ void change_patch(int8_t dir)
   
   bg_col = changed[current_patch] ? MARKED : BLACK; 
 
-  // Save current patch to EEPROM?
+  // Save active patch to EEPROM?
   // 100000 writes promised -> 1000 days 100 patch changes per day
   // Maybe not worth it...
 
