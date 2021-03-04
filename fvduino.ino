@@ -320,6 +320,7 @@ bool pot_set(uint8_t pot, uint8_t val)
 
 
 /*************** User Interface code **********************/
+using Bounce2::Button;
 
 Button select_button = Button();
 Button save_button = Button();
